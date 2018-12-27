@@ -1,0 +1,33 @@
+version: '3.4'
+
+services:
+  db:
+    container_name: mariadb
+    deploy:
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: '1500M'
+    image: yobasystems/alpine-mariadb
+    restart: unless-stopped
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_DATABASE_USER}
+      MYSQL_PASSWORD: ${MYSQL_DATABASE_PASSWORD}
+    networks:
+      - network_db
+    ports:
+      - 3306
+    labels:
+      - traefik.enable=false
+
+volumes:
+  db_data:
+    name: volume_mariadb
+
+networks:
+  network_db:
+    external: true

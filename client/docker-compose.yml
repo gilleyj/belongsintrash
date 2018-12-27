@@ -1,0 +1,34 @@
+version: '3.4'
+
+services:
+  wordpress:
+    container_name: wordpress_blog
+    image: wordpress:latest
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: '250M'
+    restart: unless-stopped
+    volumes:
+      - ./wp-content:/var/www/html/wp-content
+    environment:
+      WORDPRESS_DB_HOST: mariadb:3306
+      WORDPRESS_DB_USER: ${MYSQL_DATABASE_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_DATABASE_PASSWORD}
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
+    networks:
+      - network_db
+      - network_proxy
+    ports:
+      - 80
+    labels:
+      - traefik.docker.network=network_proxy
+      - traefik.frontend.rule=Host:wordpress.docker.localhost
+      - traefik.port=80
+
+networks:
+  network_proxy:
+    external: true
+  network_db:
+    external: true

@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+  # The reverse proxy service (Traefik)
+  reverse-proxy:
+    container_name: traefik-proxy
+    image: traefik  # The official Traefik docker image
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    command: --docker  # Enables the web UI and tells Traefik to listen to docker
+    ports:
+      - 80:80
+      - 443:443
+    expose:
+      - 8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - $PWD/traefik.toml:/traefik.toml
+      - $PWD/acme.json:/acme.json
+    networks:
+      - network_frontend
+      - network_proxy
+    labels:
+      - traefik.docker.network=network_proxy
+      - traefik.frontend.rule=Host:traefik.docker.localhost
+      - traefik.frontend.auth.basic=admin:$$apr1$$Uwy4HMRc$$mO4kAq2Vh3gDoeYZp6kSc0
+      - traefik.port=8080
+
+networks:
+  network_frontend:
+    external: true
+  network_proxy:
+    external: true

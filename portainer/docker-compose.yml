@@ -1,0 +1,32 @@
+version: '3.4'
+
+services:
+  portainer:
+    container_name: portainer
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 100M
+    image: portainer/portainer:latest
+    restart: unless-stopped
+    command: --host=unix:///var/run/docker.sock
+    volumes:
+      - portainer_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - network_proxy
+    ports:
+      - 9000
+    labels:
+      - traefik.frontend.rule=Host:portainer.docker.localhost
+      - traefik.port=9000
+      - traefik.frontend.redirect.entryPoint=https
+
+volumes:
+  portainer_data:
+    name: volume_portainer
+
+networks:
+  network_proxy:
+    external: true

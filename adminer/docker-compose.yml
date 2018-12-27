@@ -1,0 +1,28 @@
+version: '3.4'
+
+services:
+  adminer:
+    container_name: adminer
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: '50M'
+    image: adminer
+    restart: unless-stopped
+    networks:
+      - network_db
+      - network_proxy
+    ports:
+      - 8080
+    labels:
+      - traefik.docker.network=network_proxy
+      - traefik.frontend.rule=Host:adminer.docker.localhost
+      - traefik.port=8080
+      - traefik.frontend.redirect.entryPoint=https
+
+networks:
+  network_proxy:
+    external: true
+  network_db:
+    external: true

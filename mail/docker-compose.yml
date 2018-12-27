@@ -1,0 +1,39 @@
+version: '3.4'
+
+services:
+  mailserver:
+    container_name: mailserver
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: '1500M'
+    image: analogic/poste.io
+    ports:
+      - "25:25"
+      - "465:465"
+      - "587:587"
+    expose:
+      - 80
+    hostname: mail.whamcat.com
+    restart: unless-stopped
+    environment:
+      - HTTPS=OFF
+    networks:
+      - network_frontend
+    volumes:
+      - $PWD/localtime:/etc/localtime:ro
+      - volume_mail:/data
+    labels:
+      - traefik.docker.network=network_frontend
+      - traefik.frontend.rule=Host:mail.docker.localhost
+      - traefik.port=80
+      - traefik.frontend.redirect.entryPoint=https
+
+networks:
+  network_frontend:
+    external: true
+
+volumes:
+  volume_mail:
+    name: volume_mail

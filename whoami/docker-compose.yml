@@ -1,0 +1,22 @@
+version: '3.4'
+
+services:
+  whoami:
+    container_name: whoami
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 10M
+    image: emilevauge/whoami  # A container that exposes an API to show its IP address
+    networks:
+      - network_proxy
+    ports:
+      - 80
+    labels:
+      - traefik.frontend.rule=Host:whoami.docker.localhost
+      - traefik.port=80
+
+networks:
+  network_proxy:
+    external: true
