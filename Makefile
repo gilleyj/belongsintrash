@@ -11,6 +11,7 @@ stackstart: ## brings up the whole stack and suite of services
 	( cd adminer && docker-compose --compatibility up -d )
 	( cd whoami && docker-compose --compatibility up -d )
 	( cd client && docker-compose --compatibility up -d )
+	( cd client-ll && docker-compose --compatibility up -d )
 	( cd mail && docker-compose --compatibility up -d )
 
 stackstop: ## brings down the whole stack and suite of services
@@ -20,6 +21,7 @@ stackstop: ## brings down the whole stack and suite of services
 	( cd adminer && docker-compose --compatibility down )
 	( cd whoami && docker-compose --compatibility down )
 	( cd client && docker-compose --compatibility down )
+	( cd client-ll && docker-compose --compatibility down )
 	( cd mail && docker-compose --compatibility down )
 
 .PHONY: help

@@ -2,8 +2,8 @@ version: '3.4'
 
 services:
   wordpress:
-    container_name: wordpress_blog
-    image: wordpress:latest
+    container_name: lacquerlabs
+    image: lacquerlabs/service-wordpress:2.0.1
     deploy:
       resources:
         limits:
@@ -24,8 +24,10 @@ services:
       - 80
     labels:
       - traefik.docker.network=network_proxy
-      - traefik.frontend.rule=Host:wordpress.docker.localhost
+      - traefik.frontend.rule=Host:lacquerlabs.docker.localhost
       - traefik.port=80
+      - traefik.backend.healthcheck.interval=30s
+      - traefik.backend.healthcheck.path=/wp-content/index.php
 
 networks:
   network_proxy:
