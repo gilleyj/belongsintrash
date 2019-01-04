@@ -82,7 +82,6 @@ conn shared
 conn l2tp-psk
   auto=add
   leftsubnet=$PRIVATE_IP/32
-  leftnexthop=%defaultroute
   leftprotoport=17/1701
   rightprotoport=17/%any
   type=transport
@@ -107,9 +106,37 @@ conn xauth-psk
   also=shared
 EOF
 
+# /etc/ipsec.conf - strongSwan IPsec configuration file
+
+# Create IPsec (Libreswan) config
+cat > /etc/ipsec.conf <<EOF
+config setup
+  nat_traversal=yes
+
+conn %default
+  ikelifetime=60m
+  keylife=20m
+  rekeymargin=3m
+  keyingtries=1
+  keyexchange=ikev1
+
+conn rw
+  leftsubnet=$PRIVATE_IP/32
+  leftnexthop=%defaultroute
+  leftid=@moon.strongswan.org
+  leftauth=psk
+  leftfirewall=yes
+  right=%any
+  rightsourceip=10.3.0.0/24
+  rightauth=psk
+  rightauth2=xauth
+  auto=add
+EOF
+
 # Specify IPsec PSK
 cat > /etc/ipsec.secrets <<EOF
 $PUBLIC_IP  %any  : PSK "$VPN_IPSEC_PSK"
+gilleyj : XAUTH "password"
 EOF
 
 # Create xl2tpd config
@@ -199,5 +226,5 @@ rm -f /var/run/pluto/pluto.pid /var/run/xl2tpd.pid
 
 [ -f /pre-up.sh ] && /pre-up.sh
 
-/usr/sbin/ipsec start --config /etc/ipsec.conf
+/usr/sbin/ipsec start --conf /etc/ipsec.conf
 exec /usr/sbin/xl2tpd -D -c /etc/xl2tpd/xl2tpd.conf

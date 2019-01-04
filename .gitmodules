@@ -1,0 +1,3 @@
+[submodule "service-ids"]
+	path = service-ids
+	url = https://github.com/LacquerLabs/service-ids.git
