@@ -3,7 +3,7 @@ version: '3.4'
 services:
   wordpress:
     container_name: lacquerlabs
-    image: lacquerlabs/service-wordpress:2.0.1
+    image: lacquerlabs/service-wordpress:latest
     deploy:
       resources:
         limits:
@@ -12,6 +12,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./wp-content:/var/www/html/wp-content
+    env_file: .env
     environment:
       WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}

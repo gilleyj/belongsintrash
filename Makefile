@@ -1,6 +1,9 @@
 .DEFAULT_GOAL := help
 DOCKERSYNC := $(shell command -v docker-sync-stack 2> /dev/null)
 
+network: ## creates the network
+	( ./network.sh start && docker network ls )
+
 startportainer: ## brings up singleton portainer
 	( cd portainer && docker-compose -f singleton.yml --compatibility up -d )
 
