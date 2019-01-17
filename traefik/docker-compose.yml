@@ -1,4 +1,4 @@
-version: '3'
+version: '3.4'
 
 services:
   # The reverse proxy service (Traefik)
@@ -31,6 +31,26 @@ services:
 
 networks:
   network_frontend:
-    external: true
+    driver: overlay
+    attachable: true
+    internal: false
+    ipam:
+      config:
+        - subnet: 172.40.0.0/16
+          # gateway: 172.40.0.1
   network_proxy:
-    external: true
+    driver: overlay
+    attachable: true
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.42.0.0/16
+          # gateway: 172.42.0.1
+  network_db:
+    driver: overlay
+    attachable: true
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.44.0.0/16
+          # gateway: 172.44.0.1

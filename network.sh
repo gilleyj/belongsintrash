@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ "$1" == "start" ]; then
+if [ "$1" == "startx" ]; then
     echo "Starting nework"
     docker network create \
       --driver=bridge \
