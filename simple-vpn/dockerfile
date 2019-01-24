@@ -5,7 +5,7 @@ ENV TIMEZONE=UTC \
     APP_ENV=prod
 
 RUN apk --no-cache add dumb-init tzdata ca-certificates \
-    bind-tools strongswan xl2tpd openssl
+    bind-tools libreswan ipsec-tools xl2tpd openssl
 
 # configure up some container stuff
 RUN cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime && \
@@ -22,11 +22,12 @@ RUN cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime && \
 	rm /etc/ipsec.secrets /etc/ppp/chap-secrets
 
 WORKDIR /app
-COPY run.sh .
-COPY add.sh .
+COPY ./scripts /app
+RUN chmod 755 /app/*.sh
 
-RUN chmod a+x /app/run.sh /app/add.sh
+EXPOSE 500/udp 4500/udp
 
-EXPOSE 500/udp 4500/udp 1701/udp
+VOLUME ["/lib/modules", "/etc/ppp/chap-secrets", "/etc/ipsec.d/passwd", "/etc/ipsec.secrets"]
 
 CMD ["/app/run.sh"]
+
