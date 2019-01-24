@@ -54,7 +54,6 @@ check_ip "$PRIVATE_IP" || exiterr "Cannot find valid private IP."
 # Create IPsec (Libreswan) config
 cat > /etc/ipsec.conf <<EOF
 version 2.0
-
 config setup
   nat_traversal=yes
   virtual_private=%v4:10.0.0.0/8,%v4:192.168.0.0/16,%v4:172.16.0.0/12,%v4:!192.168.42.0/23
@@ -62,7 +61,6 @@ config setup
   nhelpers=0
   interfaces=%defaultroute
   uniqueids=no
-
 conn shared
   left=$PRIVATE_IP
   leftid=$PUBLIC_IP
@@ -78,21 +76,20 @@ conn shared
   ike=3des-sha1,3des-sha2,aes-sha1,aes-sha1;modp1024,aes-sha2,aes-sha2;modp1024,aes256-sha2_512
   phase2alg=3des-sha1,3des-sha2,aes-sha1,aes-sha2,aes256-sha2_512
   sha2-truncbug=yes
-
 conn l2tp-psk
   auto=add
   leftsubnet=$PRIVATE_IP/32
+  leftnexthop=%defaultroute
   leftprotoport=17/1701
   rightprotoport=17/%any
   type=transport
   phase2=esp
   also=shared
-
 conn xauth-psk
   auto=add
   leftsubnet=0.0.0.0/0
   rightaddresspool=192.168.43.10-192.168.43.250
-  modecfgdns1=8.8.8.8
+  modecfgdns1=192.168.8.1
   modecfgdns2=8.8.4.4
   leftxauthserver=yes
   rightxauthclient=yes
@@ -106,44 +103,15 @@ conn xauth-psk
   also=shared
 EOF
 
-# /etc/ipsec.conf - strongSwan IPsec configuration file
-
-# Create IPsec (Libreswan) config
-cat > /etc/ipsec.conf <<EOF
-config setup
-  nat_traversal=yes
-
-conn %default
-  ikelifetime=60m
-  keylife=20m
-  rekeymargin=3m
-  keyingtries=1
-  keyexchange=ikev1
-
-conn rw
-  leftsubnet=$PRIVATE_IP/32
-  leftnexthop=%defaultroute
-  leftid=@moon.strongswan.org
-  leftauth=psk
-  leftfirewall=yes
-  right=%any
-  rightsourceip=10.3.0.0/24
-  rightauth=psk
-  rightauth2=xauth
-  auto=add
-EOF
-
 # Specify IPsec PSK
 cat > /etc/ipsec.secrets <<EOF
 $PUBLIC_IP  %any  : PSK "$VPN_IPSEC_PSK"
-gilleyj : XAUTH "password"
 EOF
 
 # Create xl2tpd config
 cat > /etc/xl2tpd/xl2tpd.conf <<'EOF'
 [global]
 port = 1701
-
 [lns default]
 ip range = 192.168.42.10-192.168.42.250
 local ip = 192.168.42.1
@@ -159,7 +127,7 @@ EOF
 cat > /etc/ppp/options.xl2tpd <<'EOF'
 ipcp-accept-local
 ipcp-accept-remote
-ms-dns 8.8.8.8
+ms-dns 192.168.8.1
 ms-dns 8.8.4.4
 noccp
 auth
@@ -174,31 +142,31 @@ connect-delay 5000
 EOF
 
 # Update sysctl settings
-# SYST='/sbin/sysctl -e -q -w'
-# $SYST kernel.msgmnb=65536
-# $SYST kernel.msgmax=65536
-# $SYST kernel.shmmax=68719476736
-# $SYST kernel.shmall=4294967296
-# $SYST net.ipv4.ip_forward=1
-# $SYST net.ipv4.tcp_syncookies=1
-# $SYST net.ipv4.conf.all.accept_source_route=0
-# $SYST net.ipv4.conf.default.accept_source_route=0
-# $SYST net.ipv4.conf.all.accept_redirects=0
-# $SYST net.ipv4.conf.default.accept_redirects=0
-# $SYST net.ipv4.conf.all.send_redirects=0
-# $SYST net.ipv4.conf.default.send_redirects=0
-# $SYST net.ipv4.conf.lo.send_redirects=0
-# $SYST net.ipv4.conf.eth0.send_redirects=0
-# $SYST net.ipv4.conf.all.rp_filter=0
-# $SYST net.ipv4.conf.default.rp_filter=0
-# $SYST net.ipv4.conf.lo.rp_filter=0
-# $SYST net.ipv4.conf.eth0.rp_filter=0
-# $SYST net.ipv4.icmp_echo_ignore_broadcasts=1
-# $SYST net.ipv4.icmp_ignore_bogus_error_responses=1
-# $SYST net.core.wmem_max=12582912
-# $SYST net.core.rmem_max=12582912
-# $SYST net.ipv4.tcp_rmem="10240 87380 12582912"
-# $SYST net.ipv4.tcp_wmem="10240 87380 12582912"
+SYST='/sbin/sysctl -e -q -w'
+$SYST kernel.msgmnb=65536
+$SYST kernel.msgmax=65536
+$SYST kernel.shmmax=68719476736
+$SYST kernel.shmall=4294967296
+$SYST net.ipv4.ip_forward=1
+$SYST net.ipv4.tcp_syncookies=1
+$SYST net.ipv4.conf.all.accept_source_route=0
+$SYST net.ipv4.conf.default.accept_source_route=0
+$SYST net.ipv4.conf.all.accept_redirects=0
+$SYST net.ipv4.conf.default.accept_redirects=0
+$SYST net.ipv4.conf.all.send_redirects=0
+$SYST net.ipv4.conf.default.send_redirects=0
+$SYST net.ipv4.conf.lo.send_redirects=0
+$SYST net.ipv4.conf.eth0.send_redirects=0
+$SYST net.ipv4.conf.all.rp_filter=0
+$SYST net.ipv4.conf.default.rp_filter=0
+$SYST net.ipv4.conf.lo.rp_filter=0
+$SYST net.ipv4.conf.eth0.rp_filter=0
+$SYST net.ipv4.icmp_echo_ignore_broadcasts=1
+$SYST net.ipv4.icmp_ignore_bogus_error_responses=1
+$SYST net.core.wmem_max=12582912
+$SYST net.core.rmem_max=12582912
+$SYST net.ipv4.tcp_rmem="10240 87380 12582912"
+$SYST net.ipv4.tcp_wmem="10240 87380 12582912"
 
 # Create IPTables rules
 iptables -I INPUT 1 -p udp -m multiport --dports 500,4500 -j ACCEPT
@@ -226,5 +194,10 @@ rm -f /var/run/pluto/pluto.pid /var/run/xl2tpd.pid
 
 [ -f /pre-up.sh ] && /pre-up.sh
 
-/usr/sbin/ipsec start --conf /etc/ipsec.conf
+# /usr/sbin/ipsec start --conf /etc/ipsec.conf
+/usr/sbin/ipsec --checknss
+/usr/sbin/ipsec --checknflog
+/usr/sbin/ipsec _stackmanager start
+/usr/libexec/ipsec/pluto --config /etc/ipsec.conf --nofork &
+
 exec /usr/sbin/xl2tpd -D -c /etc/xl2tpd/xl2tpd.conf

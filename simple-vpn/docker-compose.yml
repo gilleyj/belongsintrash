@@ -1,13 +1,13 @@
 version: '3.1'
 services:
   vpn:
+    privileged: true
     build: .
     ports:
       - "500:500/udp"
       - "4500:4500/udp"
-      - "1701/udp"
-    cap_add:
-      - NET_ADMIN
+    #cap_add:
+    #  - NET_ADMIN
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
       - kernel.msgmnb=65536
@@ -34,3 +34,15 @@ services:
       # - net.core.rmem_max=12582912
       # - net.ipv4.tcp_rmem="10240 87380 12582912"
       # - net.ipv4.tcp_wmem="10240 87380 12582912"
+    volumes:
+      - /lib/modules:/lib/modules:ro
+      - ${PWD}/etc/ppp/chap-secrets:/etc/ppp/chap-secrets
+      - ${PWD}/etc/ipsec.d/passwd:/etc/ipsec.d/passwd
+      - ${PWD}/etc/ipsec.secrets:/etc/ipsec.secrets
+    networks:
+      - network_frontend
+    labels:
+      - traefik.enable=false
+networks:
+  network_frontend:
+    external: true
